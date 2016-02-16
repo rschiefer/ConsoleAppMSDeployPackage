@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<parameters>
+  <parameter name="HelloMessage"
+     description="Hello message for user."
+     defaultValue="Hello default.">
+    <parameterEntry
+       type="XmlFile"
+       scope="\.config"
+       match="/configuration/appSettings/add[@key='helloMessage']/@value"/>
+  </parameter>
+</parameters>
