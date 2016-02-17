@@ -8,4 +8,12 @@
        scope="\.config"
        match="/configuration/appSettings/add[@key='helloMessage']/@value"/>
   </parameter>
+  <parameter name="TargetDeploymentPath"
+     description="The path to deploy the console app to."
+     defaultValue="C:\temp\ConsoleApp1">
+    <parameterEntry
+       type="ProviderPath"
+       scope="dirPath"
+       match="TargetDatabase"/>
+  </parameter>
 </parameters>

@@ -55,11 +55,15 @@
   <ItemGroup>
     <Content Include="SetParameters.Release.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="$(RootNamespace).app.targets" />
-    <Content Include="SetParameters.QA.xml" />
+    <Content Include="SetParameters.QA.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="parameters.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
