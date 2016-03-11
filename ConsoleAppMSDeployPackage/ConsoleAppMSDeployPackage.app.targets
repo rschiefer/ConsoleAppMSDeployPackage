@@ -4,17 +4,36 @@
 
   <Target Name="AfterBuild">
     <PropertyGroup>
-      <FullOutputPath>$(MSBuildProjectDirectory)\$(OutputPath)</FullOutputPath>
-      <PackageFilename>$(MSBuildProjectName).zip</PackageFilename>
-      <PackageFullPath>$(FullOutputPath)$(PackageFilename)</PackageFullPath>
-      <MSDeployPath Condition="'$(MSDeployPath)'==''">C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe</MSDeployPath>
+      <TargetPath>C:\temp\consoleDeployFolder</TargetPath>
     </PropertyGroup>
+      
+    <PropertyGroup>
+      <FullOutputPath>$(MSBuildProjectDirectory)\$(OutputPath)</FullOutputPath>
+      <FullIntermediateOutputPath>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)</FullIntermediateOutputPath>
+      <PackageFolderPath>$(FullIntermediateOutputPath)Package\</PackageFolderPath>
+      <PackageFilename>$(MSBuildProjectName).zip</PackageFilename>
+      <PackageFullPath>$(PackageFolderPath)$(PackageFilename)</PackageFullPath>
+      <MSDeployPath Condition="'$(MSDeployPath)'==''">C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe</MSDeployPath>
+      <PreSyncRelativePath>deployment\preSync.bat</PreSyncRelativePath>
+      <PostSyncRelativePath>deployment\postSync.bat</PostSyncRelativePath>
+      <PreSyncBatFullPath>$(MSBuildProjectDirectory)\$(PreSyncRelativePath)</PreSyncBatFullPath>
+      <PostSyncBatFullPath>$(MSBuildProjectDirectory)\$(PostSyncRelativePath)</PostSyncBatFullPath>
+      <PreSyncCommand Condition="Exists($(PreSyncBatFullPath))"> -preSync:runCommand=&quot;$(PreSyncRelativePath)&quot;</PreSyncCommand>
+      <PostSyncCommand Condition="Exists($(PostSyncBatFullPath))"> -postSync:runCommand=&quot;$(PostSyncRelativePath)&quot;</PostSyncCommand>
+    </PropertyGroup>
+    <ItemGroup>
+      <SetParameterFiles Include="$(MSBuildProjectDirectory)\SetParameters.*.xml" />
+      <DeploymentFiles Include="$(MSBuildProjectDirectory)\deployment\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackageFolderPath)" />
+    <Copy SourceFiles="@(SetParameterFiles)" DestinationFolder="$(PackageFolderPath)" />
+    <Copy SourceFiles="@(DeploymentFiles)" DestinationFolder="$(PackageFolderPath)\deployment" />
     <MSdeploy
           Verb="sync"
           Source="dirPath=&quot;$(FullOutputPath)&quot;"
           Destination="package=&quot;$(PackageFullPath)&quot;"
           ExePath="$(_MSDeployDirPath_FullPath)"
-          ImportDeclareParametersItems="$(FullOutputPath)parameters.xml"
+          ImportDeclareParametersItems="$(MSBuildProjectDirectory)\parameters.xml"
     />
 
     <ItemGroup>
@@ -25,7 +44,7 @@
       <DeployCMDLines Include=":Deploy" />
       <DeployCMDLines Include="ECHO Starting deployment ..." />
       <DeployCMDLines Include="@ECHO ON" />
-      <DeployCMDLines Include="%22$(MSDeployPath)%22 -verb:sync -source:package=$(PackageFilename) -dest:dirPath=TargetPath,computername=%2 -verbose -setParamFile:SetParameters.%1.xml %~3 %~4 %~5 %~6 %~7 %~8 %~9" />
+      <DeployCMDLines Include="%22$(MSDeployPath)%22 -verb:sync -source:package=$(PackageFilename) -dest:dirPath=$(TargetPath),computername=%2 -verbose$(PreSyncCommand)$(PostSyncCommand) -setParamFile:SetParameters.%1.xml %~3 %~4 %~5 %~6 %~7 %~8 %~9" />
       <DeployCMDLines Include="@ECHO OFF" />
       <DeployCMDLines Include="GOTO End" />
 
@@ -47,9 +66,13 @@
       <DeployCMDLines Include=":End" />
     </ItemGroup>
     <WriteLinesToFile
-      File="$(FullOutputPath)$(MSBuildProjectName).SQL.deploy.cmd"
+      File="$(PackageFolderPath)$(MSBuildProjectName).SQL.deploy.cmd"
       Lines="@(DeployCMDLines)"
       Overwrite="true" />
+    <ItemGroup>
+      <PackageFiles Include="$(PackageFolderPath)**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageFiles)"  DestinationFiles="@(PackageFiles->'$(FullOutputPath)\Package\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>
