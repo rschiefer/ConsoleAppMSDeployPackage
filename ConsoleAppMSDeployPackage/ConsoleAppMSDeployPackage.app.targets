@@ -13,21 +13,7 @@
       <PackageFolderPath>$(FullIntermediateOutputPath)Package\</PackageFolderPath>
       <PackageFilename>$(MSBuildProjectName).zip</PackageFilename>
       <PackageFullPath>$(PackageFolderPath)$(PackageFilename)</PackageFullPath>
-      <MSDeployPath Condition="'$(MSDeployPath)'==''">C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe</MSDeployPath>
-      <PreSyncRelativePath>deployment\preSync.bat</PreSyncRelativePath>
-      <PostSyncRelativePath>deployment\postSync.bat</PostSyncRelativePath>
-      <PreSyncBatFullPath>$(MSBuildProjectDirectory)\$(PreSyncRelativePath)</PreSyncBatFullPath>
-      <PostSyncBatFullPath>$(MSBuildProjectDirectory)\$(PostSyncRelativePath)</PostSyncBatFullPath>
-      <PreSyncCommand Condition="Exists($(PreSyncBatFullPath))"> -preSync:runCommand=&quot;$(PreSyncRelativePath)&quot;</PreSyncCommand>
-      <PostSyncCommand Condition="Exists($(PostSyncBatFullPath))"> -postSync:runCommand=&quot;$(PostSyncRelativePath)&quot;</PostSyncCommand>
     </PropertyGroup>
-    <ItemGroup>
-      <SetParameterFiles Include="$(MSBuildProjectDirectory)\SetParameters.*.xml" />
-      <DeploymentFiles Include="$(MSBuildProjectDirectory)\deployment\*" />
-    </ItemGroup>
-    <MakeDir Directories="$(PackageFolderPath)" />
-    <Copy SourceFiles="@(SetParameterFiles)" DestinationFolder="$(PackageFolderPath)" />
-    <Copy SourceFiles="@(DeploymentFiles)" DestinationFolder="$(PackageFolderPath)\deployment" />
     <MSdeploy
           Verb="sync"
           Source="dirPath=&quot;$(FullOutputPath)&quot;"
@@ -36,6 +22,18 @@
           ImportDeclareParametersItems="$(MSBuildProjectDirectory)\parameters.xml"
     />
 
+    <PropertyGroup>
+      <MSDeployPath Condition="'$(MSDeployPath)'==''">C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe</MSDeployPath>
+      <PreSyncCommand> -preSync:runCommand=&quot;deployment\preSync.bat&quot;</PreSyncCommand>
+      <PostSyncCommand> -postSync:runCommand=&quot;deployment\postSync.bat&quot;</PostSyncCommand>
+    </PropertyGroup>
+    <ItemGroup>
+      <SetParameterFiles Include="$(MSBuildProjectDirectory)\SetParameters.*.xml" />
+      <DeploymentFiles Include="$(MSBuildProjectDirectory)\deployment\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(PackageFolderPath)" />
+    <Copy SourceFiles="@(SetParameterFiles)" DestinationFolder="$(PackageFolderPath)" />
+    <Copy SourceFiles="@(DeploymentFiles)" DestinationFolder="$(PackageFolderPath)\deployment" />
     <ItemGroup>
       <DeployCMDLines Include="@ECHO OFF" />
       <DeployCMDLines Include="IF %22%1%22==%22%22 GOTO Readme" />
