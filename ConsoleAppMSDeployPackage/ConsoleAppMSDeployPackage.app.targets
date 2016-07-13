@@ -14,6 +14,7 @@
       <PackageFilename>$(MSBuildProjectName).zip</PackageFilename>
       <PackageFullPath>$(PackageFolderPath)$(PackageFilename)</PackageFullPath>
     </PropertyGroup>
+    <MakeDir Directories="$(PackageFolderPath)" />
     <MSdeploy
           Verb="sync"
           Source="dirPath=&quot;$(FullOutputPath)&quot;"
@@ -31,7 +32,6 @@
       <SetParameterFiles Include="$(MSBuildProjectDirectory)\SetParameters.*.xml" />
       <DeploymentFiles Include="$(MSBuildProjectDirectory)\deployment\*" />
     </ItemGroup>
-    <MakeDir Directories="$(PackageFolderPath)" />
     <Copy SourceFiles="@(SetParameterFiles)" DestinationFolder="$(PackageFolderPath)" />
     <Copy SourceFiles="@(DeploymentFiles)" DestinationFolder="$(PackageFolderPath)\deployment" />
     <ItemGroup>
